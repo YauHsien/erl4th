@@ -1,0 +1,12 @@
+{application, erl4th,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { erl4th_app, []}},
+  {env, []}
+ ]}.

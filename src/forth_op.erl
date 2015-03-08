@@ -1,46 +1,55 @@
 -module(forth_op).
 
 %% Forth built-in pperators
--export([ plus/1,
-	  minus/1,
-	  multiply/1,
-	  divide/1,
-	  bit_and/1,
-	  bit_or/1
+-export([ plus/2,
+	  minus/2,
+	  multiply/2,
+	  divide/2,
+	  bit_and/2,
+	  bit_or/2,
+	  emit/2
 	  ]).
 
-plus([B,A|Stack]) ->
-    [A+B|Stack];
-plus(Stack) ->
-    io:fwrite("~p would not be accepted by +~n",
-              [lists:reverse(Stack)]).
+plus([B,A|Stack], Acc) ->
+    {ok, [A+B|Stack], [A,B|Acc]};
+plus(_, _) ->
+    {error, -4}.
 
-minus([B,A|Stack]) ->
-    [A-B|Stack];
-minus(Stack) ->
-    io:fwrite("~p would not be accepted by -~n",
-              [lists:reverse(Stack)]).
+minus([B,A|Stack], Acc) ->
+    {ok, [A-B|Stack], [A,B|Acc]};
+minus(_, _) ->
+    {error, -4}.
 
-multiply([B,A|Stack]) ->
-    [A*B|Stack];
-multiply(Stack) ->
-    io:fwrite("~p would not be accepted by *~n",
-              [lists:reverse(Stack)]).
+multiply([B,A|Stack], Acc) ->
+    {ok, [A*B|Stack], [A,B|Acc]};
+multiply(_, _) ->
+    {error, -4}.
 
-divide([B,A|Stack]) ->
-    [A/B|Stack];
-divide(Stack) ->
-    io:fwrite("~p would not be accepted by /~n",
-              [lists:reverse(Stack)]).
+divide([B,A|Stack], Acc) ->
+    {ok, [A/B|Stack], [A,B|Acc]};
+divide(_, _) ->
+    {error, -4}.
 
-bit_and([B,A|Stack]) ->
-    [A and B|Stack];
-bit_and(Stack) ->
-    io:fwrite("~p would not be accepted by AND~n",
-              [lists:reverse(Stack)]).
+bit_and([B,A|Stack], Acc) ->
+    {ok, [A and B|Stack], [A,B|Acc]};
+bit_and(_, _) ->
+    {error, -4}.
 
-bit_or([B,A|Stack]) ->
-    [A or B|Stack];
-bit_or(Stack) ->
-    io:fwrite("~p would not be accepted by OR~n",
-              [lists:reverse(Stack)]).
+bit_or([B,A|Stack], Acc) ->
+    {ok, [A or B|Stack], [A,B|Acc]};
+bit_or(_, _) ->
+    {error, -4}.
+
+-spec(emit(Stack::list(), StackAcc::list())
+          -> {ok, Stack1::list(), Stack2::list()};
+          (Stack::list(), StackAcc::list())
+          -> {error, ErrorNum::integer()}).
+emit([A|Stack], Acc) ->
+    try
+        io:fwrite(" ~c", [A]),
+        {ok, Stack, [A|Acc]}
+    catch _:_ ->
+        {error, -4}
+    end;
+emit(_, _) ->
+    {error, -4}.

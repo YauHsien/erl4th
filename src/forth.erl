@@ -13,23 +13,25 @@
              StackAcc1::list(),
              Stack1::list()
            }.
+%% interface for the initial
 cr(Input, {Dict, Stack}) ->
     cr(Input, {Dict, [], Stack});
+%% to get result
 cr([], {Dict, Acc, Stack}) ->
     {Dict, Acc, Stack};
+%% to execute number
 cr([Num|Input], {Dict, Acc, Stack}) when is_number(Num) ->
     cr(Input, {Dict, [Num|Acc], [Num|Stack]});
+%% to do definition
 cr([':'|Input], {Dict, Acc, Stack}) ->
-    {Name, Code, Input1} = find_code(Input),
-    case Code of
+    case find_code(Input) of
+        {Name, Code, Input1} ->
+            ets:insert(Dict, {Name, Code}),
+            cr(Input1, {Dict, Acc, Stack});
         undefined ->
-            io:fwrite("~p would not be read as a code definition,"
-                     ++ " because of lack of definition part ~n",
-                     [[':', Name, '...'|Input1]]);
-        _ ->
-            ets:insert(Dict, {Name, Code})
-    end,
-    cr(Input1, {Dict, Acc, Stack});
+            {Dict, Acc, Stack}
+    end;
+%% to execute built-in or defined word
 cr([Word|Input], {Dict, Acc, Stack}) when is_atom(Word) ->
     case find_op(Word) of
         undefined ->
@@ -52,6 +54,7 @@ cr([Word|Input], {Dict, Acc, Stack}) when is_atom(Word) ->
                                    )
             end
     end;
+%% to execute string
 cr([Str|Input], {Dict, Acc, Stack}) ->
     cr(Input, {Dict, Acc, [Str|Stack]}).
 
@@ -69,12 +72,12 @@ find_code([':'|Input]) ->
 find_code(Input) ->
     find_code(Input, {undefined, []}).
 
-find_code([], {Name, Code}) ->
-    {Name, undefined, lists:reverse(Code)};
+find_code([], {_Name, _Code}) ->
+    undefined;
+find_code(['[char]',Char|Input], {Name, Code}) ->
+    find_code(Input, {Name, [Char|Code]});
 find_code([Name|Input], {undefined, Code}) ->
     find_code(Input, {Name, Code});
-find_code([';'|Input], {Name, []}) ->
-    {Name, undefined, Input};
 find_code([';'|Input], {Name, Code}) ->
     {Name, lists:reverse(Code), Input};
 find_code([Code|Input], {Name, Code1}) ->

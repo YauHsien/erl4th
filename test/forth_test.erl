@@ -25,4 +25,7 @@ expression_test() ->
     ?assertMatch({undefined, _, [5]},
                  forth:cr([1, 2, 3, '+', '*'], {undefined, []})).
 
-
+file_load_test() ->
+    ?assertMatch(
+        [<<":">>,<<"star">>,<<"[char]">>,<<"*">>,<<"emit">>,<<";">>],
+	forth:load("..\\ebin\\in.txt")).

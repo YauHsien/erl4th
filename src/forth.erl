@@ -6,10 +6,11 @@ load(File) ->
     lexer(file:read_file(File)).
 
 lexer({ok, Bin}) when is_binary(Bin) ->
-    lists:filter(fun(X) -> X /= <<>> end,
-        binary:split(
-            binary:replace(Bin, <<"\r\n">>, <<" ">>, [global]),
-            <<" ">>, [global])).
+    lists:map(fun(X) -> unicode:characters_to_list(X, unicode) end,
+        lists:filter(fun(X) -> X /= <<>> end,
+            binary:split(
+                binary:replace(Bin, <<"\r\n">>, <<" ">>, [global]),
+                <<" ">>, [global]))).
 
 %% cr/2: to run a list of input over a stack.
 -spec cr(Input::list(), {Dict::tuple(), StackAcc::list(), Stack::list()})

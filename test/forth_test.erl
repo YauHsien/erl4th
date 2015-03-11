@@ -27,5 +27,25 @@ expression_test() ->
 
 file_load_test() ->
     ?assertMatch(
-        [<<":">>,<<"star">>,<<"[char]">>,<<"*">>,<<"emit">>,<<";">>],
+        [":","star","[char]","*","emit",";"],
 	forth:load("..\\ebin\\in.txt")).
+
+file_load1_test() ->
+    io:fwrite("~tp~n", [forth:load("..\\ebin\\test.f")]),
+    ?assertMatch(
+        ["fload","FileID1.f","create","cyn","1024","allot",":","test","(","--",")",
+         "s\"","4743_20130503.txt\"","fid1",
+         [27284,21517],
+         "+","lplace",
+         [38283,27284,49],
+         "\\",
+         [35712,27284,49],
+         "\\","fid1",
+         [27284,26696,36039,26009],
+         "+","fid1",
+         [27284,26696,35712,21462,38263,24230],
+         "+","@","dump","cr","100","0","do","cyn","1024","fid1",
+         [27284,38957,24207,34399],
+         "+","@","read-line","drop","drop","cyn","swap","type","cr","loop",";","test"],
+	forth:load("..\\ebin\\test.f")).
+

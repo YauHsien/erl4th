@@ -68,6 +68,24 @@ delim_scan_test() ->
 	forth_lexical:scan(<<".\"">>, {undefined, <<>>})
     ),
     ?assertMatch(
-        {delimiter, <<".\"">>, <<"emit">>},
+        {syntax_error, ".\"emit", <<>>},
 	forth_lexical:scan(<<".\"emit">>, {undefined, <<>>})
+    ),
+    ?assertMatch(
+        {syntax_error, ".\"emit", <<".">>},
+	forth_lexical:scan(<<".\"emit .">>, {undefined, <<>>})
+    ).
+
+scan_test() ->
+    ?assertMatch(
+        [{integer, 42}, {word, "emit"}],
+	forth_lexical:scan(<<"42    emit">>)
+    ).
+
+define_scan_test() ->
+    ?assertMatch(
+        [{delimiter, $:}, {word, "star"},
+	 {word, "[char]"}, {integer, 42}, {word, "emit"},
+	 {delimiter, $;}],
+        forth_lexical:scan(<<": star  [char] 42 emit ;">>)
     ).

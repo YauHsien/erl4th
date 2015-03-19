@@ -7,7 +7,7 @@ word_scan_test() ->
 	forth_lexical:scan(<<"hello,world">>, {undefined, <<>>})
     ),
     ?assertMatch(
-        {word, "hello", <<";world">>},
+        {word, "hello;world", <<>>},
 	forth_lexical:scan(<<"hello;world">>, {undefined, <<>>})
     ).
 
@@ -88,4 +88,8 @@ define_scan_test() ->
 	 {word, "[char]"}, {integer, 42}, {word, "emit"},
 	 {delimiter, $;}],
         forth_lexical:scan(<<": star  [char] 42 emit ;">>)
+    ),
+    ?assertMatch(
+        [{word, ".\"emit"}],
+	forth_lexical:scan(<<".\"emit">>)
     ).

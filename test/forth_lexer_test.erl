@@ -118,3 +118,27 @@ integer_test() ->
 	forth_lexical:scan(<<"1 1. 1.0 -1 -1. -1.0">>)
     ).
 
+positive_float_1_test() ->
+    ?assertMatch(
+        [{word, "+"},
+         {word, "+1"},
+	 {word, "+1."},
+	 {float, 1.0},  % +1.e
+	 {float, 1.0},  % +1.e+
+	 {float, 10.0}, % +1.e+1
+	 {word, "+1.e+1."}],
+        forth_lexical:scan(<<"+ +1 +1. +1.e +1.e+ +1.e+1 +1.e+1.">>)
+    ).
+
+positive_float_2_test() ->
+    ?assertMatch(
+        [{word, "+"},
+         {word, "+1"},
+	 {word, "+1."},
+         {word, "+1.1"},
+	 {float, 1.1},  % +1.1e
+	 {float, 1.1},  % +1.1e+
+	 {float, 11.0}, % +1.1e+1
+         {word, "+1.1e+1."}],
+        forth_lexical:scan(<<"+ +1 +1. +1.1 +1.1e +1.1e+ +1.1e+1 +1.1e+1.">>)
+    ).

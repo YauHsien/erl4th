@@ -145,8 +145,9 @@ scan(<<$., Rest/binary>>, {?float_2, Parsed}) ->
 scan(<<Char, Rest/binary>>, {?float_3, Parsed})
 when ?is_digit(Char) ->
     scan(Rest, {?float_4, <<Parsed/binary, Char:8/integer>>});
-scan(<<Char, Rest/binary>>, {?float_4, Parsed})
-when Char == $e orelse Char == $E ->
+scan(<<Char, Rest/binary>>, {TypeFloat, Parsed})
+when (TypeFloat == ?float_2 orelse TypeFloat == ?float_3 orelse TypeFloat == ?float_4)
+andalso (Char == $e orelse Char == $E) ->
     scan(Rest, {?float_5, <<Parsed/binary, Char:8/integer>>});
 scan(<<Char, Rest/binary>>, {?float_5, Parsed})
 when ?is_sign(Char) ->
@@ -170,20 +171,24 @@ to_integer(Bin) ->
     Int.
 
 to_float(Bin) ->
-    to_float(binary:bin_to_list(Bin), undefined, {0, 0}).
+    to_float(binary:bin_to_list(Bin), undefined, {0, 0, 0}).
 
-to_float([], _, {Base, Exp}) ->
-    Base * math:pow(10, Exp);
-to_float([Char|List], _, {Base, Exp}) when ?is_sign(Char) ->
-    to_float(List, base, {Base, Exp});
-to_float([Char|List], _, {Base, Exp}) when ?is_letter_e(Char) ->
-    to_float(List, exp, {Base, Exp});
-to_float([$.|List], Dir, {Base, Exp}) ->
-    to_float(List, Dir, {Base, Exp});
-to_float([Char|List], base, {Base, Exp}) ->
-    to_float(List, base, {Base * 10 + Char - $0, Exp});
-to_float([Char|List], exp, {Base, Exp}) ->
-    to_float(List, exp, {Base, Exp * 10 + Char - $0}).
+to_float([], _, {Base, NagExp, Exp}) ->
+    Base * math:pow(10, Exp - NagExp);
+to_float([Char|List], exp, {Base, NagExp, Exp}) when ?is_sign(Char) ->
+    to_float(List, exp, {Base, NagExp, Exp});
+to_float([Char|List], _, {Base, NagExp, Exp}) when ?is_sign(Char) ->
+    to_float(List, base, {Base, NagExp, Exp});
+to_float([Char|List], _, {Base, NagExp, Exp}) when ?is_letter_e(Char) ->
+    to_float(List, exp, {Base, NagExp, Exp});
+to_float([$.|List], _, {Base, NagExp, Exp}) ->
+    to_float(List, nag_exp, {Base, NagExp, Exp});
+to_float([Char|List], base, {Base, NagExp, Exp}) ->
+    to_float(List, base, {Base * 10 + Char - $0, NagExp, Exp});
+to_float([Char|List], nag_exp, {Base, NagExp, Exp}) ->
+    to_float(List, nag_exp, {Base * 10 + Char - $0, NagExp + 1, Exp});
+to_float([Char|List], exp, {Base, NagExp, Exp}) ->
+    to_float(List, exp, {Base, NagExp, Exp * 10 + Char - $0}).
 
 to_delimiter(Bin) ->
     list_to_atom(binary:bin_to_list(Bin)).

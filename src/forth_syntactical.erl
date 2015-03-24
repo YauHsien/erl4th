@@ -4,7 +4,8 @@
 -record(state, {type, status, src, trg}).
 
 scan(List) ->
-    scan(List, {#state{}, []}).
+    {#state{}, Result} = scan(List, {#state{}, []}),
+    Result.
 
 %% <Code> ::= <String> || <If>
 
@@ -50,7 +51,7 @@ scan([], {State, Acc}) ->
     {State, lists:reverse(Acc)};
 scan([{delimiter, '."'}|List], {State, Acc}) ->
     case find_string(List) of
-        {no_end, String},  ->
+        {no_end, String}  ->
 	    scan([], {State#state{type=string, status=incomplete, src=List,
 	              trg=String}, Acc});
         {String, [{delimiter, '"'}|Rest]} ->

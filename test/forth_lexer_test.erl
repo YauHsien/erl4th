@@ -3,8 +3,8 @@
 
 word_scan_test() ->
     ?assertMatch(
-	{{word, <<"hello,world">>}, <<>>},
-	forth_lexical:scan(<<"hello,world">>, {undefined, <<>>})
+	{{word, <<"hello,">>}, <<" world">>},
+	forth_lexical:scan(<<"hello, world">>, {undefined, <<>>})
     ),
     ?assertMatch(
         {{word, <<"hello;world">>}, <<>>},
@@ -141,4 +141,10 @@ positive_float_2_test() ->
 	 {float, 11.0}, % +1.1e+1
          {word, "+1.1e+1."}],
         forth_lexical:scan(<<"+ +1 +1. +1.1 +1.1e +1.1e+ +1.1e+1 +1.1e+1.">>)
+    ).
+
+hello_world_test() ->
+    ?assertMatch(
+        [{delimiter, '."'}, {word, "hello,"}, {word, "world"}, {delimiter, '"'}],
+        forth_lexical:scan(<<".\" hello, world \"">>)
     ).

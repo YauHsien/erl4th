@@ -1,11 +1,19 @@
 -module(forth_syntactical).
--export([scan/1]).
+-export([scan/1, scan/2]).
+-include("..\\include\\forth_syntactical.hrl").
 
--record(state, {type, status, src, trg}).
-
+-spec(scan([lexeme()]) -> {#state{}, [lexeme()]}).
 scan(List) ->
-    {#state{}, Result} = scan(List, {#state{}, []}),
-    Result.
+    scan1(List, {#state{}, []}).
+
+-spec(scan([lexeme()], tab()) -> {#state{}, [lexeme()], tab()}).
+scan(List, Tab) ->
+    {State, Result} = scan1(List, {#state{}, []}),
+    {Tab1, Result1} = analyze(Tab, Result),
+    {State, Result1, Tab1}.
+
+analyze(Tab, Result) ->
+    {Tab, Result}.
 
 %% <Code> ::= <String> || <If>
 
@@ -47,16 +55,20 @@ scan(List) ->
 
 %% <Nothing> ::= 
 
-scan([], {State, Acc}) ->
+scan1([], {State, Acc}) ->
     {State, lists:reverse(Acc)};
-scan([{delimiter, '."'}|List], {State, Acc}) ->
+scan1(List, {#state{status=incomplete}=State, Acc}) ->
+    {State, lists:reverse(Acc)};
+scan1([{delimiter, '."'}|List], {State, Acc}) ->
     case find_string(List) of
         {no_end, String}  ->
-	    scan([], {State#state{type=string, status=incomplete, src=List,
-	              trg=String}, Acc});
+	    scan1(List, {State#state{type=string, status=incomplete, src=List,
+	                 trg=String}, Acc});
         {String, [{delimiter, '"'}|Rest]} ->
-	    scan(Rest, {State, [{string, String}|Acc]})
-    end.
+	    scan1(Rest, {State, [{string, String}|Acc]})
+    end;
+scan1([Lexeme|Rest], {State, Acc}) ->
+    scan1(Rest, {State, [Lexeme|Acc]}).
 
 find_string(List) ->
     find_string(List, []).

@@ -4,14 +4,17 @@
 
 string_test() ->
     ?assertMatch(
-        {_, [{string, "hello, world"}]},
+        {_, [{string, "hello, world", -1}]},
         forth_syntactical:scan(forth_lexical:scan(<<".\" hello, world \"">>))
     ).
 
 analysis_test() ->
-    {#state{}, Code, Tab} =
+    forth_symtable:start(),
+    Tab = ets:new(table, [set]),
+    {#state{}, _Code} =
 	forth_syntactical:scan(forth_lexical:scan(<<": star 42 emit ;">>),
-	                       ets:new(table, [set])),
+	                       Tab),
+    %% match {name::string(), {arity(), [lexeme()]}}
     ?assertMatch(
         [{"star", {0, [{_,_}|_]}}],
 	ets:lookup(Tab, "star")
